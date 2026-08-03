@@ -1,0 +1,9 @@
+# Sandora project scope: CEO coordinates peer main-agent sessions through Herdr.
+# Disable Codex's native multi-agent surface so delegation cannot bypass Herdr.
+
+[agents]
+enabled = false
+
+[features]
+multi_agent = false
+
