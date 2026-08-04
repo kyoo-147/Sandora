@@ -132,10 +132,16 @@ Webhooks` in task and report channels. Avatar PNGs and the author mapping live
 under `integrations/discord-bridge/assets/personas/` and `config/discord.json`.
 Inbound receipts and system events remain under the primary application bot.
 
-`#agent-activity` contains curated accepted, delegated, handoff, blocked, and
-completed transitions. `#system-log` contains redacted health transitions,
-warnings, and errors. Neither channel may contain task bodies, prompts,
-transcripts, credentials, or full stack traces.
+`#agent-activity` is the human-readable company timeline. It contains curated
+accepted, assigned, delegated, handoff, completed, delivered-result, warm, and
+stopped transitions. When a CEO or department agent sends an `update`, `final`,
+`report`, `approval`, or `error` to its working channel, the bridge mirrors a
+redacted preview of that result into `#agent-activity`, including the actor,
+request ID, destination, and runtime milestone. The full result remains in the
+working channel. Previews are capped at 300 characters and remove prompts,
+tokens, credentials, and stack traces. `#system-log` contains redacted health
+transitions, warnings, and errors. Neither observability channel contains full
+transcripts or task bodies.
 
 ## Scheduled tasks
 

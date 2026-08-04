@@ -8,7 +8,7 @@ import {
 import { requestFromDiscordMessage } from "./admission.js";
 import { resolveAttachmentPaths } from "./attachments.js";
 import { loadBridgeConfig, loadScheduleConfig, requireBotToken } from "./config.js";
-import { EventPublisher } from "./events.js";
+import { EventPublisher, redactEventText } from "./events.js";
 import { HerdrDepartmentTabManager } from "./department-tabs.js";
 import {
   HerdrDispatcher,
@@ -145,6 +145,27 @@ async function drainOutbox(): Promise<void> {
         store.markSent(pending.path);
         if (
           !["agent-activity", "system-log"].includes(pending.message.channel) &&
+          ["update", "final", "report", "approval", "error"].includes(pending.message.kind)
+        ) {
+          try {
+            const resultRequest = store.readInbound(pending.message.requestId);
+            eventPublisher.publish({
+              level: pending.message.kind === "error" ? "error" : "activity",
+              code: "result.delivered",
+              department: resultRequest?.department,
+              requestId: pending.message.requestId,
+              actor: pending.message.author,
+              summary: `${pending.message.author} delivered a ${pending.message.kind} result to #${pending.message.channel}`,
+              detail: redactEventText(pending.message.content),
+            });
+          } catch (eventError) {
+            console.error(
+              `[discord-bridge] result mirror failed: ${eventError instanceof Error ? eventError.message : String(eventError)}`,
+            );
+          }
+        }
+        if (
+          !["agent-activity", "system-log"].includes(pending.message.channel) &&
           ["final", "report", "approval", "error"].includes(pending.message.kind)
         ) {
           store.markInboundDelivered(pending.message.requestId);
@@ -212,6 +233,15 @@ async function admitAndDispatch(request: InboundRequest): Promise<void> {
       }
       assignment = await supervisor.assign(request);
       store.markInboundAssigned(request, assignment.agentName, assignment);
+      eventPublisher.publish({
+        level: "activity",
+        code: "task.assigned",
+        department: request.department,
+        requestId: request.id,
+        actor: assignment.agentName,
+        summary: `${config.departments[request.department].displayName} assigned the task`,
+        detail: `${assignment.runtime} · ${assignment.model} · ${assignment.control}`,
+      });
       dispatchState = store.markInboundDispatching(request.id);
       await dispatcher.enqueue(request, inboxPath, assignment, () => {
         store.markInboundSubmitted(request.id, "Herdr prompt invocation started");
