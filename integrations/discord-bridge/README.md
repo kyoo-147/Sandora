@@ -3,7 +3,9 @@
 This local bridge connects the private Kite & Kiln Discord server to the live
 Herdr workspace. It accepts only the configured Owner in the CEO and five
 department channels, stores each message before dispatch, and routes it to the
-matching persistent lead. Durable outbox records return to Discord with local
+matching on-demand department lead. Only CEO and the bridge remain permanently
+visible. Department work runs in a temporary `Departments` tab, stays warm for
+ten minutes, then closes. Durable outbox records return to Discord with local
 image attachments and per-agent webhook personas when configured.
 
 ## Security model

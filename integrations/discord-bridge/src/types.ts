@@ -25,7 +25,7 @@ export interface DepartmentConfig {
   channel: ChannelName;
   leadAgent: string;
   profilePath: string;
-  runtime: "codex";
+  runtime: "codex" | "auto";
   model: string;
 }
 
@@ -44,6 +44,10 @@ export interface DiscordBridgeConfig {
   defaultOutboundChannel: ChannelName;
   herdrAgent: string;
   departmentRoutingEnabled: boolean;
+  demandDrivenDepartments: boolean;
+  departmentTabLabel: string;
+  departmentWarmLeaseMs: number;
+  departmentSweepMs: number;
   departments: Record<DepartmentName, DepartmentConfig>;
   personas: Record<string, PersonaConfig>;
   outputOnlyChannels: ChannelName[];
@@ -111,6 +115,7 @@ export interface HandoffRecord {
 export type AgentLifecycle =
   | "starting"
   | "idle"
+  | "warm"
   | "working"
   | "blocked"
   | "recovering"
@@ -125,8 +130,13 @@ export interface AgentRegistryEntry {
   lifecycle: AgentLifecycle;
   runtime: string;
   model: string;
+  control?: "canonical" | "raw";
   activeRequestIds: string[];
   updatedAt: string;
+  tabId?: string;
+  supervisorOwned?: boolean;
+  lastUsedAt?: string;
+  warmUntil?: string;
   lastError?: string;
 }
 

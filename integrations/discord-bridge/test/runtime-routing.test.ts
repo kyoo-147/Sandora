@@ -36,10 +36,10 @@ describe("worker runtime routing", () => {
     });
   });
 
-  it("keeps standard work on canonical Codex", () => {
+  it("keeps standard work off Sol through a verified raw runtime", () => {
     expect(selectWorkerRoute(request("Implement the approved component"))).toMatchObject({
-      runtime: "codex",
-      control: "canonical",
+      runtime: "cmdc",
+      control: "raw",
     });
   });
 

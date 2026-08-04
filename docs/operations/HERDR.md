@@ -155,7 +155,8 @@ $split = herdr pane split --current --direction right --cwd $PWD --no-focus |
   ConvertFrom-Json
 $pane = $split.result.pane.pane_id
 
-herdr pane run $pane "cmdc --model gpt-5.6-luna"
+herdr pane run $pane "cmdc --model gpt-5.6-luna --skip-onboarding"
+herdr pane wait-output $pane --regex 'Ask your question\.\.\.' --timeout 60000
 herdr pane send-text $pane "<bounded work packet ending with a composed marker>"
 herdr pane send-keys $pane enter
 herdr pane wait-output $pane --regex '^\s*CMDC_TASK_COMPLETE\s*$' --timeout 180000
@@ -164,7 +165,10 @@ herdr pane read $pane --source recent-unwrapped --lines 120
 
 ## Coordination policy
 
-- Default to a sibling pane in the current tab and current working directory.
+- For Discord department work, allocate supervisor-owned panes in the no-focus
+  `Departments` tab; never split the CEO/Bridge tab for department agents.
+- For unrelated manual work outside the bridge, default to a sibling pane in
+  the current tab and current working directory.
 - Create a new workspace only for a distinct project or when the Owner asks for
   that topology.
 - Use `--current`, explicit IDs, or unique live names. Do not rely on UI focus.

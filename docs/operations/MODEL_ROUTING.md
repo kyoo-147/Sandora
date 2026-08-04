@@ -77,9 +77,9 @@ through `max`. Long context is capacity, not permission to load unrelated data.
 
 Live local baseline:
 
-- Version: `1.9.0`.
+- Version: `1.10.0`.
 - `cmdc --list-models` returned 50 available models in the latest check on
-  2026-08-03. An earlier same-day run returned 51, and the official generated
+  2026-08-04. An earlier run returned 51, and the official generated
   catalog still listed 51. Treat this as evidence that catalog and entitlement
   views can diverge or change during the day.
 - The live registry, not this document, is the source of truth for model IDs.
@@ -129,11 +129,10 @@ Live local baseline:
   repeated implementation-scale quota behavior remains unresolved.
 - A live Herdr smoke test failed before AGY startup: canonical `--kind agy`
   generated `Start-Process -FilePath agy -ArgumentList ''`, which PowerShell
-  rejects. Raw `agy` bypasses this adapter bug and launches, but remains quota
-  blocked.
+  rejects. Raw `agy` bypasses this adapter bug and launches successfully.
 - Current canonical automatic-routing health is `Unhealthy` because the Herdr
   launcher is broken. Raw-pane AGY is allowed as an explicit fallback for
-  bounded and time-boxed substantive tasks after a live prompt check. Keep a
+  bounded and time-boxed substantive tasks after a live readiness check. Keep a
   fallback ready for implementation-scale or consequence-heavy work until
   repeated quota behavior is benchmarked.
 

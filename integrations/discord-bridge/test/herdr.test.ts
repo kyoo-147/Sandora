@@ -6,6 +6,7 @@ import {
   buildDepartmentPrompt,
   HerdrPromptAmbiguousError,
   rawCompletionInstruction,
+  rawCompletionMarker,
   RAW_COMPLETION_REGEX,
   sanitizedChildEnvironment,
 } from "../src/herdr.js";
@@ -103,10 +104,11 @@ describe("Herdr admission", () => {
   });
 
   it("describes but does not embed the raw completion marker", () => {
-    expect(rawCompletionInstruction()).toContain("joining the words");
+    expect(rawCompletionInstruction("discord-123")).toContain("joining SANDORA");
     expect(rawCompletionInstruction()).not.toContain("SANDORA_DEPARTMENT_DONE");
     const marker = new RegExp(RAW_COMPLETION_REGEX);
-    expect(marker.test("SANDORA_DEPARTMENT_DONE")).toBe(true);
-    expect(marker.test("prefix SANDORA_DEPARTMENT_DONE suffix")).toBe(false);
+    expect(rawCompletionMarker("discord-123")).toBe("SANDORA_DEPARTMENT_DONE_DISCORD123");
+    expect(marker.test("SANDORA_DEPARTMENT_DONE_DISCORD123")).toBe(true);
+    expect(marker.test("prefix SANDORA_DEPARTMENT_DONE_DISCORD123 suffix")).toBe(false);
   });
 });

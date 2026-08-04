@@ -32,6 +32,9 @@ changes lifecycle and layout, not organizational responsibility.
   durably accepted.
 - Close the `Departments` tab when its final supervised pane closes.
 - Recreate the tab and lead from durable context when work arrives later.
+- Reserve Codex `gpt-5.6-sol` for CEO. Select CMDC or raw AGY dynamically for
+  department leads and workers from live task fit, entitlement, health, and
+  control evidence; non-CEO fallback must never use Sol.
 
 ## Scope
 
@@ -157,8 +160,9 @@ registry lease alone can never prove that a request is safe to terminate.
 1. Discord admits and persists an Owner request, then sends the normal receipt.
 2. The channel router selects the department.
 3. The supervisor acquires the department lock and calls `ensureLead`.
-4. If necessary, the tab manager creates `Departments` without focus and starts
-   the stable lead there.
+4. If necessary, runtime routing selects a healthy, entitled CMDC or raw AGY
+   model for the task; the tab manager creates `Departments` without focus and
+   starts the stable lead there.
 5. The request follows the existing durable dispatch protocol.
 6. Completion and durable output release the assignment.
 7. A lead enters `warm`; a worker closes after its artifact or handoff is
@@ -170,6 +174,27 @@ registry lease alone can never prove that a request is safe to terminate.
 When a busy lead receives an independent request, existing worker-routing rules
 still apply. The worker starts in `Departments`, owns one request, and is not
 kept warm.
+
+## Runtime routing
+
+CEO remains the only Sol session. Department identity is logical and is not
+bound to one provider. A cold department start routes from the admitted task:
+
+- bounded finance, operations, extraction, and formatting start with verified
+  CMDC Go candidates such as `gpt-5.6-luna`;
+- large-context engineering or repository work may use a live-eligible CMDC
+  Kimi or GLM coding model;
+- Google-oriented product, design, research, or independent provider work may
+  use time-boxed raw AGY when the local launch and prompt check succeed;
+- a raw-provider failure uses the least costly verified non-Sol fallback that
+  can still meet acceptance criteria, normally Codex Luna or Terra.
+
+Every cold start checks live availability. A model listed by CMDC but rejected
+by the Owner's Go entitlement is ineligible. AGY remains raw-pane controlled
+until its canonical Windows adapter is healthy. A warm lead retains its current
+runtime for conversational continuity; a materially incompatible follow-up
+closes or hands off rather than switching provider inside the active session.
+Runtime, model, fallback, and observed failure are persisted per assignment.
 
 ## Closure gates and races
 

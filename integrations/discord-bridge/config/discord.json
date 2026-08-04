@@ -21,6 +21,10 @@
   "defaultOutboundChannel": "ceo-office",
   "herdrAgent": "ceo",
   "departmentRoutingEnabled": true,
+  "demandDrivenDepartments": true,
+  "departmentTabLabel": "Departments",
+  "departmentWarmLeaseMs": 600000,
+  "departmentSweepMs": 30000,
   "departments": {
     "ceo": {
       "displayName": "CEO Office",
@@ -35,7 +39,7 @@
       "channel": "product",
       "leadAgent": "product-lead",
       "profilePath": "demo-company/product/PRODUCT.md",
-      "runtime": "codex",
+      "runtime": "auto",
       "model": "gpt-5.6-terra"
     },
     "design": {
@@ -43,7 +47,7 @@
       "channel": "design",
       "leadAgent": "design-lead",
       "profilePath": "demo-company/brand/TASTE.md",
-      "runtime": "codex",
+      "runtime": "auto",
       "model": "gpt-5.6-terra"
     },
     "engineering": {
@@ -51,7 +55,7 @@
       "channel": "engineering",
       "leadAgent": "engineering-lead",
       "profilePath": "demo-company/product/PRODUCT.md",
-      "runtime": "codex",
+      "runtime": "auto",
       "model": "gpt-5.6-terra"
     },
     "finance": {
@@ -59,16 +63,16 @@
       "channel": "finance",
       "leadAgent": "finance-lead",
       "profilePath": "demo-company/data/quarterly/2026-Q2.md",
-      "runtime": "codex",
-      "model": "gpt-5.6-terra"
+      "runtime": "auto",
+      "model": "gpt-5.6-luna"
     },
     "operations": {
       "displayName": "Operations",
       "channel": "operations",
       "leadAgent": "operations-lead",
       "profilePath": "demo-company/workflows/DEMO_RUNBOOK.md",
-      "runtime": "codex",
-      "model": "gpt-5.6-terra"
+      "runtime": "auto",
+      "model": "gpt-5.6-luna"
     }
   },
   "personas": {

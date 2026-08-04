@@ -9,6 +9,7 @@ import { requestFromDiscordMessage } from "./admission.js";
 import { resolveAttachmentPaths } from "./attachments.js";
 import { loadBridgeConfig, loadScheduleConfig, requireBotToken } from "./config.js";
 import { EventPublisher } from "./events.js";
+import { HerdrDepartmentTabManager } from "./department-tabs.js";
 import {
   HerdrDispatcher,
   HerdrPromptAmbiguousError,
@@ -44,11 +45,16 @@ store.acquireBridgeLock();
 const dispatcher = new HerdrDispatcher(config, repositoryRoot);
 const eventPublisher = new EventPublisher(store);
 const supervisorControl = new CliSupervisorControl(repositoryRoot);
+const departmentPanes = new HerdrDepartmentTabManager(
+  repositoryRoot,
+  config.departmentTabLabel,
+);
 const supervisor = new DepartmentSupervisor(
   config,
   store,
   eventPublisher,
   supervisorControl,
+  departmentPanes,
 );
 
 const client = new Client({
@@ -364,7 +370,7 @@ async function recoverAmbiguousInbox(): Promise<void> {
       continue;
     }
     const live = state.assignedAgent
-      ? await supervisorControl.getAgent(state.assignedAgent).catch(() => undefined)
+      ? await supervisor.inspectRegisteredAgent(state.assignedAgent).catch(() => undefined)
       : undefined;
     if (live?.status === "working" || live?.status === "blocked") {
       store.markInboundObserved(
@@ -395,10 +401,9 @@ client.once(Events.ClientReady, (readyClient) => {
         ? await supervisor.reconcileLeads()
         : [];
       const onlineLeads = leads.filter((lead) =>
-        ["idle", "working"].includes(lead.lifecycle),
+        ["idle", "warm", "working"].includes(lead.lifecycle),
       );
-      const expectedLeadCount = config.departmentRoutingEnabled ? 6 : 1;
-      const startupHealthy = (onlineLeads.length || 1) === expectedLeadCount;
+      const startupHealthy = onlineLeads.some((lead) => lead.name === "ceo");
       store.writeRuntimeStatus({
         status: startupHealthy ? "ready" : "degraded",
         readyAt: new Date().toISOString(),
@@ -414,7 +419,9 @@ client.once(Events.ClientReady, (readyClient) => {
       eventPublisher.publish({
         level: startupHealthy ? "info" : "warning",
         code: startupHealthy ? "bridge.ready" : "bridge.degraded",
-        summary: `Discord connected · ${onlineLeads.length || 1}/${expectedLeadCount} leads available`,
+        summary: config.demandDrivenDepartments
+          ? `Discord connected - CEO ready - ${onlineLeads.filter((lead) => lead.name !== "ceo").length} departments warm`
+          : `Discord connected - ${onlineLeads.length}/6 leads available`,
       });
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
@@ -429,7 +436,7 @@ client.once(Events.ClientReady, (readyClient) => {
       eventPublisher.publish({
         level: "error",
         code: "startup.degraded",
-        summary: "Discord connected, but persistent lead reconciliation failed",
+        summary: "Discord connected, but lead reconciliation failed",
         detail: reason,
       });
     }
@@ -482,6 +489,10 @@ const ambiguousRecoveryTimer = setInterval(
   () => void track(recoverAmbiguousInbox()),
   Math.max(config.inboxRetryPollMs, 30_000),
 );
+const departmentSweepTimer = setInterval(
+  () => void track(supervisor.sweepExpired()),
+  config.departmentSweepMs,
+);
 
 async function shutdown(signal: string): Promise<void> {
   if (shuttingDown) return;
@@ -489,6 +500,7 @@ async function shutdown(signal: string): Promise<void> {
   clearInterval(outboxTimer);
   clearInterval(inboxRetryTimer);
   clearInterval(ambiguousRecoveryTimer);
+  clearInterval(departmentSweepTimer);
   for (const task of scheduledTasks) task.stop();
   await Promise.race([
     Promise.allSettled([...activeOperations]),
