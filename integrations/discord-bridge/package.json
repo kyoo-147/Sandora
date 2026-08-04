@@ -1,0 +1,28 @@
+{
+  "name": "@sandora/discord-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "start": "tsx src/index.ts",
+    "outbox": "tsx src/outbox-cli.ts",
+    "handoff": "tsx src/handoff-cli.ts",
+    "departments:reconcile": "tsx src/departments-cli.ts",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "discord.js": "14.27.0",
+    "node-cron": "4.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "4.23.5",
+    "typescript": "7.0.2",
+    "vitest": "4.1.10"
+  }
+}

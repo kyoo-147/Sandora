@@ -1,0 +1,111 @@
+{
+  "applicationId": "1534052196185018470",
+  "publicKey": "5e6a837bc4d475d5ff8d54a2b7e215114437e308a06f7d19a52f4db6772fb351",
+  "guildId": "1534051409291513856",
+  "ownerUserId": "1534049933244628992",
+  "channels": {
+    "general": "1534051410268782624",
+    "tech-company": "1534051450269864038",
+    "ceo-office": "1534053312582778950",
+    "approvals": "1534053343620759592",
+    "executive-reports": "1534053368413028432",
+    "design": "1534053394803593246",
+    "product": "1534053423799078986",
+    "engineering": "1534053445236035704",
+    "finance": "1534053469575577611",
+    "operations": "1534053490907942952",
+    "agent-activity": "1534053517390643200",
+    "system-log": "1534053574479319140"
+  },
+  "inboundChannel": "ceo-office",
+  "defaultOutboundChannel": "ceo-office",
+  "herdrAgent": "ceo",
+  "departmentRoutingEnabled": true,
+  "departments": {
+    "ceo": {
+      "displayName": "CEO Office",
+      "channel": "ceo-office",
+      "leadAgent": "ceo",
+      "profilePath": "projects/sandora/PROJECT.md",
+      "runtime": "codex",
+      "model": "gpt-5.6-sol"
+    },
+    "product": {
+      "displayName": "Product",
+      "channel": "product",
+      "leadAgent": "product-lead",
+      "profilePath": "demo-company/product/PRODUCT.md",
+      "runtime": "codex",
+      "model": "gpt-5.6-terra"
+    },
+    "design": {
+      "displayName": "Design & 3D",
+      "channel": "design",
+      "leadAgent": "design-lead",
+      "profilePath": "demo-company/brand/TASTE.md",
+      "runtime": "codex",
+      "model": "gpt-5.6-terra"
+    },
+    "engineering": {
+      "displayName": "Engineering",
+      "channel": "engineering",
+      "leadAgent": "engineering-lead",
+      "profilePath": "demo-company/product/PRODUCT.md",
+      "runtime": "codex",
+      "model": "gpt-5.6-terra"
+    },
+    "finance": {
+      "displayName": "Finance",
+      "channel": "finance",
+      "leadAgent": "finance-lead",
+      "profilePath": "demo-company/data/quarterly/2026-Q2.md",
+      "runtime": "codex",
+      "model": "gpt-5.6-terra"
+    },
+    "operations": {
+      "displayName": "Operations",
+      "channel": "operations",
+      "leadAgent": "operations-lead",
+      "profilePath": "demo-company/workflows/DEMO_RUNBOOK.md",
+      "runtime": "codex",
+      "model": "gpt-5.6-terra"
+    }
+  },
+  "personas": {
+    "ceo": {
+      "displayName": "ceo",
+      "avatarPath": "integrations/discord-bridge/assets/personas/ceo.png"
+    },
+    "product-lead": {
+      "displayName": "product-lead",
+      "avatarPath": "integrations/discord-bridge/assets/personas/product-lead.png"
+    },
+    "design-lead": {
+      "displayName": "design-lead",
+      "avatarPath": "integrations/discord-bridge/assets/personas/design-lead.png"
+    },
+    "engineering-lead": {
+      "displayName": "engineering-lead",
+      "avatarPath": "integrations/discord-bridge/assets/personas/engineering-lead.png"
+    },
+    "finance-lead": {
+      "displayName": "finance-lead",
+      "avatarPath": "integrations/discord-bridge/assets/personas/finance-lead.png"
+    },
+    "operations-lead": {
+      "displayName": "operations-lead",
+      "avatarPath": "integrations/discord-bridge/assets/personas/operations-lead.png"
+    }
+  },
+  "outputOnlyChannels": [
+    "approvals",
+    "executive-reports",
+    "agent-activity",
+    "system-log"
+  ],
+  "herdrTimeoutMs": 900000,
+  "outboxPollMs": 1500,
+  "inboxRetryPollMs": 15000,
+  "maxDeliveryAttempts": 8,
+  "maxDispatchAttempts": 5
+}

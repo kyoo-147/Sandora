@@ -6,6 +6,7 @@ project, then load only its profile and task-relevant references.
 | Project | Status | Purpose | Profile |
 | --- | --- | --- | --- |
 | Sandora | Active / bootstrap | CLI-operated AI department coordinated by CEO | `projects/sandora/PROJECT.md` |
+| Kite & Kiln | Fictional demo fixture | Spatial-commerce startup context for website and PM demonstrations | `demo-company/PROJECT.md` |
 
 ## Retrieval rules
 

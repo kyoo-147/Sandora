@@ -46,7 +46,7 @@ unless the Owner explicitly brings them into a task.
 - All delegated agents are peer main-agent sessions controlled through Herdr.
 - When the Owner omits runtime/model selection, CEO routes automatically from
   verified task fit, health, entitlement, and cost evidence.
-- Project knowledge is repository-native and progressively disclosed.
+- Project knowledge is project-native and progressively disclosed.
 
 ## Open questions
 

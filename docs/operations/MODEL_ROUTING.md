@@ -43,7 +43,7 @@ quality/cost tradeoff outside existing authority.
 | Standard implementation, repository exploration, routine review | Codex or CMDC + `gpt-5.6-terra` or another verified balanced model | Better cost/capability balance |
 | Repetitive extraction, inventory, formatting, bounded low-risk tasks | Codex/CMDC + `gpt-5.6-luna` or a verified fast model | Optimize latency and cost |
 | Very large-context repository scan | CMDC + a verified long-context model such as Kimi K2.7 Code or GLM 5.2 | Live CMDC catalog advertises long-horizon/1M-context options |
-| Google-oriented tool workflow or independent provider review | AGY + Gemini 3.6 Flash or Gemini 3.1 Pro | Native Antigravity harness and current official model menu; verify local entitlement first |
+| Google-oriented tool workflow or independent provider review | AGY + Gemini 3.6 Flash or Gemini 3.1 Pro | Antigravity tool workflow and current official model menu; verify local entitlement first |
 
 These are starting heuristics, not permanent rankings.
 

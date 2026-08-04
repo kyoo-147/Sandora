@@ -1,0 +1,33 @@
+{
+  "timezone": "Asia/Bangkok",
+  "jobs": [
+    {
+      "name": "daily-company-brief",
+      "cron": "0 9 * * *",
+      "enabled": false,
+      "channel": "executive-reports",
+      "task": "Prepare the daily company brief: active work, blockers, approvals required, and the next important action. Verify current evidence before reporting."
+    },
+    {
+      "name": "weekly-planning",
+      "cron": "30 9 * * 1",
+      "enabled": false,
+      "channel": "executive-reports",
+      "task": "Prepare the weekly plan. Reconcile current priorities, assign justified Herdr lanes, and report owners, evidence, risks, and expected outcomes."
+    },
+    {
+      "name": "weekly-executive-report",
+      "cron": "0 17 * * 5",
+      "enabled": false,
+      "channel": "executive-reports",
+      "task": "Prepare the weekly executive report with verified accomplishments, unresolved risks, decisions, and next-week actions."
+    },
+    {
+      "name": "monthly-revenue-report",
+      "cron": "30 9 1 * *",
+      "enabled": false,
+      "channel": "executive-reports",
+      "task": "Prepare the monthly revenue and operating report. Label mock data, preserve metric lineage, and separate facts, interpretations, decisions, and risks."
+    }
+  ]
+}

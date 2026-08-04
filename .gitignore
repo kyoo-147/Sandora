@@ -1,0 +1,31 @@
+# Local dependencies and build output
+node_modules/
+dist/
+coverage/
+
+# Credentials and local environment
+.env
+.env.*
+!.env.example
+*.secret
+*.secrets
+
+# Discord bridge runtime records
+demo-company/workspace/inbox/*.json
+demo-company/workspace/outbox/pending/*.json
+demo-company/workspace/outbox/sent/*.json
+demo-company/workspace/outbox/failed/*.json
+demo-company/workspace/sessions/*.jsonl
+demo-company/workspace/status/runtime.json
+demo-company/workspace/status/requests/*.json
+demo-company/workspace/status/agents/*.json
+demo-company/workspace/status/bridge.lock
+demo-company/workspace/status/recovery/*.txt
+demo-company/workspace/events/activity/*.json
+demo-company/workspace/events/system/*.json
+demo-company/workspace/handoffs/*.json
+demo-company/workspace/reports/*
+!demo-company/workspace/reports/.gitkeep
+
+# Regenerable image-generation intermediates
+integrations/discord-bridge/assets/personas/chroma/

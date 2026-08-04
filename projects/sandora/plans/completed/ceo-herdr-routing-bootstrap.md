@@ -9,7 +9,7 @@
 ## Outcome
 
 Sandora has one verified CEO identity, a progressive-disclosure Herdr operating
-guide, evidence-backed runtime/model routing, and repository-native project
+guide, evidence-backed runtime/model routing, and project-native project
 memory. Additional agents are peer main-agent sessions created only through
 Herdr.
 
@@ -27,7 +27,7 @@ Herdr.
   progressive-disclosure recommendations and exact command evidence.
 - `model_research`: inspect GPT-5.6, CMDC, and AGY from official/live sources;
   distinguish verified facts, catalog descriptions, and unbenchmarked claims.
-- `repository_review`: independently review Sandora's repository-memory
+- `project_memory_review`: independently review Sandora's project-memory
   structure; identify omissions, conflicts, and validation needs.
 - `ceo`: reconcile lane claims, edit repository truth, validate effective
   configuration, and return the executive result.
@@ -64,7 +64,7 @@ report; no agent may spawn subagents or alter global/project state.
 - Herdr `0.7.5-preview.2026-07-29-44b3adb12552` client/server compatibility
   verified; Codex lifecycle integration reports current schema `v7`.
 - Three Codex + `gpt-5.6-terra` peer lanes completed through Herdr:
-  Herdr operations, model routing, and repository-memory review.
+  Herdr operations, model routing, and project-memory review.
 - `codex features list` and `codex doctor --json` verify
   `multi_agent=false`, repository root `D:\working\Sandora`, and effective model
   `gpt-5.6-sol`.

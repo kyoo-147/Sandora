@@ -11,6 +11,10 @@ Then use progressive disclosure:
    deeper product, architecture, decision, plan, code, or validation context.
 4. Read `docs/operations/HERDR.md` before inspecting or controlling Herdr.
 5. Read `docs/operations/MODEL_ROUTING.md` before selecting a runtime or model.
+6. When a prompt begins with `[DISCORD_TASK]` or
+   `[DISCORD_DEPARTMENT_TASK]`, read
+   `docs/operations/DISCORD_BRIDGE.md` before processing the admitted message or
+   creating an outbox response.
 
 ## Operating rules
 
