@@ -143,6 +143,12 @@ tokens, credentials, and stack traces. `#system-log` contains redacted health
 transitions, warnings, and errors. Neither observability channel contains full
 transcripts or task bodies.
 
+After a task reaches a durable completed outcome, the bridge also posts a short
+`TASK DONE REPORT` to the task's department channel. The report identifies the
+department, assigned agent, request ID, runtime/model, and channel containing
+the full result. This acts as a visible attendance/work-completion record while
+keeping the substantive answer and artifacts in their normal destination.
+
 ## Scheduled tasks
 
 Schedules are configured in

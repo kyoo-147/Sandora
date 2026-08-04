@@ -95,6 +95,30 @@ function normalizeLegacyRequest(request: InboundRequest): InboundRequest {
   };
 }
 
+function enqueueCompletionReport(
+  request: InboundRequest,
+  assignment: Assignment,
+): void {
+  const department = config.departments[request.department];
+  const resultChannel = request.replyChannel ?? department.channel;
+  store.enqueueOutbound({
+    id: randomUUID(),
+    requestId: request.id,
+    createdAt: new Date().toISOString(),
+    channel: department.channel,
+    kind: "report",
+    author: department.leadAgent,
+    content: [
+      "✅ TASK DONE REPORT",
+      `Department: ${department.displayName}`,
+      `Agent: ${assignment.agentName}`,
+      `Request: ${request.id}`,
+      `Runtime: ${assignment.runtime} · ${assignment.model}`,
+      `Result delivered to: #${resultChannel}`,
+    ].join("\n"),
+  });
+}
+
 async function sendToChannel(channel: ChannelName, content: string): Promise<void> {
   const target = await client.channels.fetch(config.channels[channel]);
   if (!target?.isSendable()) {
@@ -350,6 +374,19 @@ async function admitAndDispatch(request: InboundRequest): Promise<void> {
       actor: assignment.agentName,
       summary: `${config.departments[request.department].displayName} completed the agent turn`,
     });
+    try {
+      enqueueCompletionReport(request, assignment);
+    } catch (error) {
+      eventPublisher.publish({
+        level: "warning",
+        code: "completion_report.failed",
+        department: request.department,
+        requestId: request.id,
+        actor: assignment.agentName,
+        summary: "Task completed, but the department completion report could not be queued",
+        detail: error instanceof Error ? error.message : String(error),
+      });
+    }
   } finally {
     if (assignment) {
       await supervisor
