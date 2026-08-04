@@ -8,7 +8,8 @@ import {
 import { requestFromDiscordMessage } from "./admission.js";
 import { resolveAttachmentPaths } from "./attachments.js";
 import { loadBridgeConfig, loadScheduleConfig, requireBotToken } from "./config.js";
-import { EventPublisher } from "./events.js";
+import { EventPublisher, redactEventText } from "./events.js";
+import { HerdrDepartmentTabManager } from "./department-tabs.js";
 import {
   HerdrDispatcher,
   HerdrPromptAmbiguousError,
@@ -44,11 +45,16 @@ store.acquireBridgeLock();
 const dispatcher = new HerdrDispatcher(config, repositoryRoot);
 const eventPublisher = new EventPublisher(store);
 const supervisorControl = new CliSupervisorControl(repositoryRoot);
+const departmentPanes = new HerdrDepartmentTabManager(
+  repositoryRoot,
+  config.departmentTabLabel,
+);
 const supervisor = new DepartmentSupervisor(
   config,
   store,
   eventPublisher,
   supervisorControl,
+  departmentPanes,
 );
 
 const client = new Client({
@@ -87,6 +93,30 @@ function normalizeLegacyRequest(request: InboundRequest): InboundRequest {
     targetAgent: target.leadAgent,
     replyChannel: request.replyChannel ?? request.channel ?? target.channel,
   };
+}
+
+function enqueueCompletionReport(
+  request: InboundRequest,
+  assignment: Assignment,
+): void {
+  const department = config.departments[request.department];
+  const resultChannel = request.replyChannel ?? department.channel;
+  store.enqueueOutbound({
+    id: randomUUID(),
+    requestId: request.id,
+    createdAt: new Date().toISOString(),
+    channel: department.channel,
+    kind: "report",
+    author: department.leadAgent,
+    content: [
+      "✅ TASK DONE REPORT",
+      `Department: ${department.displayName}`,
+      `Agent: ${assignment.agentName}`,
+      `Request: ${request.id}`,
+      `Runtime: ${assignment.runtime} · ${assignment.model}`,
+      `Result delivered to: #${resultChannel}`,
+    ].join("\n"),
+  });
 }
 
 async function sendToChannel(channel: ChannelName, content: string): Promise<void> {
@@ -137,6 +167,27 @@ async function drainOutbox(): Promise<void> {
           store.updatePending(pending.path, pending.message);
         }
         store.markSent(pending.path);
+        if (
+          !["agent-activity", "system-log"].includes(pending.message.channel) &&
+          ["update", "final", "report", "approval", "error"].includes(pending.message.kind)
+        ) {
+          try {
+            const resultRequest = store.readInbound(pending.message.requestId);
+            eventPublisher.publish({
+              level: pending.message.kind === "error" ? "error" : "activity",
+              code: "result.delivered",
+              department: resultRequest?.department,
+              requestId: pending.message.requestId,
+              actor: pending.message.author,
+              summary: `${pending.message.author} delivered a ${pending.message.kind} result to #${pending.message.channel}`,
+              detail: redactEventText(pending.message.content),
+            });
+          } catch (eventError) {
+            console.error(
+              `[discord-bridge] result mirror failed: ${eventError instanceof Error ? eventError.message : String(eventError)}`,
+            );
+          }
+        }
         if (
           !["agent-activity", "system-log"].includes(pending.message.channel) &&
           ["final", "report", "approval", "error"].includes(pending.message.kind)
@@ -206,6 +257,15 @@ async function admitAndDispatch(request: InboundRequest): Promise<void> {
       }
       assignment = await supervisor.assign(request);
       store.markInboundAssigned(request, assignment.agentName, assignment);
+      eventPublisher.publish({
+        level: "activity",
+        code: "task.assigned",
+        department: request.department,
+        requestId: request.id,
+        actor: assignment.agentName,
+        summary: `${config.departments[request.department].displayName} assigned the task`,
+        detail: `${assignment.runtime} · ${assignment.model} · ${assignment.control}`,
+      });
       dispatchState = store.markInboundDispatching(request.id);
       await dispatcher.enqueue(request, inboxPath, assignment, () => {
         store.markInboundSubmitted(request.id, "Herdr prompt invocation started");
@@ -314,6 +374,19 @@ async function admitAndDispatch(request: InboundRequest): Promise<void> {
       actor: assignment.agentName,
       summary: `${config.departments[request.department].displayName} completed the agent turn`,
     });
+    try {
+      enqueueCompletionReport(request, assignment);
+    } catch (error) {
+      eventPublisher.publish({
+        level: "warning",
+        code: "completion_report.failed",
+        department: request.department,
+        requestId: request.id,
+        actor: assignment.agentName,
+        summary: "Task completed, but the department completion report could not be queued",
+        detail: error instanceof Error ? error.message : String(error),
+      });
+    }
   } finally {
     if (assignment) {
       await supervisor
@@ -364,7 +437,7 @@ async function recoverAmbiguousInbox(): Promise<void> {
       continue;
     }
     const live = state.assignedAgent
-      ? await supervisorControl.getAgent(state.assignedAgent).catch(() => undefined)
+      ? await supervisor.inspectRegisteredAgent(state.assignedAgent).catch(() => undefined)
       : undefined;
     if (live?.status === "working" || live?.status === "blocked") {
       store.markInboundObserved(
@@ -395,10 +468,9 @@ client.once(Events.ClientReady, (readyClient) => {
         ? await supervisor.reconcileLeads()
         : [];
       const onlineLeads = leads.filter((lead) =>
-        ["idle", "working"].includes(lead.lifecycle),
+        ["idle", "warm", "working"].includes(lead.lifecycle),
       );
-      const expectedLeadCount = config.departmentRoutingEnabled ? 6 : 1;
-      const startupHealthy = (onlineLeads.length || 1) === expectedLeadCount;
+      const startupHealthy = onlineLeads.some((lead) => lead.name === "ceo");
       store.writeRuntimeStatus({
         status: startupHealthy ? "ready" : "degraded",
         readyAt: new Date().toISOString(),
@@ -414,7 +486,9 @@ client.once(Events.ClientReady, (readyClient) => {
       eventPublisher.publish({
         level: startupHealthy ? "info" : "warning",
         code: startupHealthy ? "bridge.ready" : "bridge.degraded",
-        summary: `Discord connected · ${onlineLeads.length || 1}/${expectedLeadCount} leads available`,
+        summary: config.demandDrivenDepartments
+          ? `Discord connected - CEO ready - ${onlineLeads.filter((lead) => lead.name !== "ceo").length} departments warm`
+          : `Discord connected - ${onlineLeads.length}/6 leads available`,
       });
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
@@ -429,7 +503,7 @@ client.once(Events.ClientReady, (readyClient) => {
       eventPublisher.publish({
         level: "error",
         code: "startup.degraded",
-        summary: "Discord connected, but persistent lead reconciliation failed",
+        summary: "Discord connected, but lead reconciliation failed",
         detail: reason,
       });
     }
@@ -482,6 +556,10 @@ const ambiguousRecoveryTimer = setInterval(
   () => void track(recoverAmbiguousInbox()),
   Math.max(config.inboxRetryPollMs, 30_000),
 );
+const departmentSweepTimer = setInterval(
+  () => void track(supervisor.sweepExpired()),
+  config.departmentSweepMs,
+);
 
 async function shutdown(signal: string): Promise<void> {
   if (shuttingDown) return;
@@ -489,6 +567,7 @@ async function shutdown(signal: string): Promise<void> {
   clearInterval(outboxTimer);
   clearInterval(inboxRetryTimer);
   clearInterval(ambiguousRecoveryTimer);
+  clearInterval(departmentSweepTimer);
   for (const task of scheduledTasks) task.stop();
   await Promise.race([
     Promise.allSettled([...activeOperations]),

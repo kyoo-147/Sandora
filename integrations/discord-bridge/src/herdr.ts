@@ -4,7 +4,13 @@ import { promisify } from "node:util";
 import type { DispatchTarget, DiscordBridgeConfig, InboundRequest } from "./types.js";
 
 const execFileAsync = promisify(execFile);
-export const RAW_COMPLETION_REGEX = "^\\s*SANDORA_DEPARTMENT_DONE\\s*$";
+export const RAW_COMPLETION_REGEX = "^\\s*SANDORA_DEPARTMENT_DONE_[A-Z0-9]+\\s*$";
+
+export function rawCompletionMarker(requestId: string): string {
+  const suffix = requestId.replace(/[^a-zA-Z0-9]/g, "").slice(-12).toUpperCase();
+  if (!suffix) throw new Error("Raw completion marker requires an alphanumeric request ID");
+  return `SANDORA_DEPARTMENT_DONE_${suffix}`;
+}
 
 export interface HerdrDispatchResult {
   stdout: string;
@@ -128,8 +134,9 @@ export class HerdrDispatcher {
         target.agentName,
       );
       if (target.control === "raw") {
-        prompt = `${prompt}\n${rawCompletionInstruction()}`;
-        await this.dispatchRaw(target, prompt, onPromptStarting);
+        const marker = rawCompletionMarker(request.id);
+        prompt = `${prompt}\n${rawCompletionInstruction(request.id)}`;
+        await this.dispatchRaw(target, prompt, marker, onPromptStarting);
       } else {
         await this.dispatchCanonical(target.agentName, prompt, onPromptStarting);
       }
@@ -210,11 +217,11 @@ export class HerdrDispatcher {
   private async dispatchRaw(
     target: DispatchTarget,
     prompt: string,
+    completionMarker: string,
     onPromptStarting: () => void,
   ): Promise<HerdrDispatchResult> {
     if (!target.paneId) throw new Error(`Raw worker ${target.agentName} has no pane ID`);
     const environment = sanitizedChildEnvironment();
-    await new Promise((resolve) => setTimeout(resolve, 1_500));
     onPromptStarting();
     try {
       await execFileAsync("herdr", ["pane", "send-text", target.paneId, prompt], {
@@ -240,7 +247,7 @@ export class HerdrDispatcher {
           "wait-output",
           target.paneId,
           "--regex",
-          RAW_COMPLETION_REGEX,
+          `^\\s*${completionMarker}\\s*$`,
           "--timeout",
           String(this.config.herdrTimeoutMs),
         ],
@@ -293,6 +300,7 @@ export class HerdrDispatcher {
   }
 }
 
-export function rawCompletionInstruction(): string {
-  return "After the durable outbox command succeeds, print one final line made by joining the words SANDORA, DEPARTMENT, and DONE with underscore characters. Do not print that line earlier.";
+export function rawCompletionInstruction(requestId = "request"): string {
+  const suffix = requestId.replace(/[^a-zA-Z0-9]/g, "").slice(-12).toUpperCase();
+  return `After the durable outbox command succeeds, print one final line made by joining SANDORA, DEPARTMENT, DONE, and the final alphanumeric request suffix ${suffix} with underscore characters. Do not print that line earlier.`;
 }

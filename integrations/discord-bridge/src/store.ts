@@ -11,13 +11,20 @@ import type {
   PendingOutbound,
 } from "./types.js";
 
-function writeJsonAtomic(filePath: string, value: unknown): void {
+function writeAtomicText(filePath: string, content: string): void {
   const temporaryPath = `${filePath}.${process.pid}.tmp`;
-  fs.writeFileSync(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, {
-    encoding: "utf8",
-    flag: "wx",
-  });
+  const descriptor = fs.openSync(temporaryPath, "wx");
+  try {
+    fs.writeSync(descriptor, content, undefined, "utf8");
+    fs.fsyncSync(descriptor);
+  } finally {
+    fs.closeSync(descriptor);
+  }
   fs.renameSync(temporaryPath, filePath);
+}
+
+function writeJsonAtomic(filePath: string, value: unknown): void {
+  writeAtomicText(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
 function safeFilePart(value: string): string {
@@ -36,6 +43,8 @@ export class WorkspaceStore {
   readonly activityEventDirectory: string;
   readonly systemEventDirectory: string;
   readonly bridgeLockPath: string;
+  readonly bridgeLockDirectory: string;
+  readonly bridgeLockOwnerPath: string;
   readonly handoffDirectory: string;
   readonly recoveryDirectory: string;
   private ownsBridgeLock = false;
@@ -52,6 +61,8 @@ export class WorkspaceStore {
     this.activityEventDirectory = path.join(root, "events", "activity");
     this.systemEventDirectory = path.join(root, "events", "system");
     this.bridgeLockPath = path.join(this.statusDirectory, "bridge.lock");
+    this.bridgeLockDirectory = path.join(this.statusDirectory, "bridge.lock.d");
+    this.bridgeLockOwnerPath = path.join(this.bridgeLockDirectory, "owner.json");
     this.handoffDirectory = path.join(root, "handoffs");
     this.recoveryDirectory = path.join(this.statusDirectory, "recovery");
   }
@@ -425,11 +436,11 @@ export class WorkspaceStore {
   acquireBridgeLock(): void {
     this.ensure();
     const claim = (): void => {
-      fs.writeFileSync(
-        this.bridgeLockPath,
-        `${JSON.stringify({ pid: process.pid, startedAt: new Date().toISOString() })}\n`,
-        { encoding: "utf8", flag: "wx" },
-      );
+      fs.mkdirSync(this.bridgeLockDirectory);
+      writeAtomicText(this.bridgeLockOwnerPath, `${JSON.stringify({
+        pid: process.pid,
+        startedAt: new Date().toISOString(),
+      })}\n`);
       this.ownsBridgeLock = true;
     };
     try {
@@ -439,10 +450,24 @@ export class WorkspaceStore {
       const code = (error as NodeJS.ErrnoException).code;
       if (code !== "EEXIST") throw error;
     }
+    let lockRecord: { pid?: number } | undefined;
     try {
-      const ownerPid = Number(
-        (JSON.parse(fs.readFileSync(this.bridgeLockPath, "utf8")) as { pid?: number }).pid,
+      lockRecord = JSON.parse(fs.readFileSync(this.bridgeLockOwnerPath, "utf8")) as { pid?: number };
+    } catch (error) {
+      const ageMs = Date.now() - fs.statSync(this.bridgeLockDirectory).mtimeMs;
+      if (ageMs > 10_000) {
+        if (fs.existsSync(this.bridgeLockOwnerPath)) fs.unlinkSync(this.bridgeLockOwnerPath);
+        fs.rmdirSync(this.bridgeLockDirectory);
+        claim();
+        return;
+      }
+      throw new Error(
+        "Bridge lock is malformed and too recent to recover safely",
+        { cause: error },
       );
+    }
+    try {
+      const ownerPid = Number(lockRecord?.pid);
       if (!Number.isInteger(ownerPid) || ownerPid <= 0) {
         throw new Error("Bridge lock is malformed; manual recovery is required");
       }
@@ -450,7 +475,8 @@ export class WorkspaceStore {
         process.kill(ownerPid, 0);
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code === "ESRCH") {
-          fs.unlinkSync(this.bridgeLockPath);
+          if (fs.existsSync(this.bridgeLockOwnerPath)) fs.unlinkSync(this.bridgeLockOwnerPath);
+          fs.rmdirSync(this.bridgeLockDirectory);
           claim();
           return;
         }
@@ -468,10 +494,13 @@ export class WorkspaceStore {
   releaseBridgeLock(): void {
     if (!this.ownsBridgeLock) return;
     try {
-      const owner = JSON.parse(fs.readFileSync(this.bridgeLockPath, "utf8")) as {
+      const owner = JSON.parse(fs.readFileSync(this.bridgeLockOwnerPath, "utf8")) as {
         pid?: number;
       };
-      if (owner.pid === process.pid) fs.unlinkSync(this.bridgeLockPath);
+      if (owner.pid === process.pid) {
+        fs.unlinkSync(this.bridgeLockOwnerPath);
+        fs.rmdirSync(this.bridgeLockDirectory);
+      }
     } finally {
       this.ownsBridgeLock = false;
     }
@@ -480,7 +509,11 @@ export class WorkspaceStore {
   readAgent(name: string): AgentRegistryEntry | undefined {
     const filePath = path.join(this.agentRegistryDirectory, `${safeFilePart(name)}.json`);
     if (!fs.existsSync(filePath)) return undefined;
-    return JSON.parse(fs.readFileSync(filePath, "utf8")) as AgentRegistryEntry;
+    try {
+      return JSON.parse(fs.readFileSync(filePath, "utf8")) as AgentRegistryEntry;
+    } catch {
+      return undefined;
+    }
   }
 
   listAgents(): AgentRegistryEntry[] {
@@ -508,12 +541,7 @@ export class WorkspaceStore {
       this.agentRegistryDirectory,
       `${safeFilePart(entry.name)}.json`,
     );
-    const temporaryPath = `${filePath}.${process.pid}.tmp`;
-    fs.writeFileSync(temporaryPath, `${JSON.stringify(entry, null, 2)}\n`, {
-      encoding: "utf8",
-      flag: "wx",
-    });
-    fs.renameSync(temporaryPath, filePath);
+    writeJsonAtomic(filePath, entry);
   }
 
   appendEvent(event: CompanyEvent): string {
@@ -545,12 +573,7 @@ export class WorkspaceStore {
       this.recoveryDirectory,
       `${safeFilePart(requestId)}-${Date.now()}.txt`,
     );
-    const temporaryPath = `${filePath}.${process.pid}.tmp`;
-    fs.writeFileSync(temporaryPath, content.slice(-100_000), {
-      encoding: "utf8",
-      flag: "wx",
-    });
-    fs.renameSync(temporaryPath, filePath);
+    writeAtomicText(filePath, content.slice(-100_000));
     return filePath;
   }
 
@@ -595,12 +618,7 @@ export class WorkspaceStore {
   }
 
   updatePending(pendingPath: string, message: OutboundMessage): void {
-    const temporaryPath = `${pendingPath}.${process.pid}.tmp`;
-    fs.writeFileSync(temporaryPath, `${JSON.stringify(message, null, 2)}\n`, {
-      encoding: "utf8",
-      flag: "wx",
-    });
-    fs.renameSync(temporaryPath, pendingPath);
+    writeJsonAtomic(pendingPath, message);
   }
 
   markSent(pendingPath: string): string {
@@ -629,9 +647,7 @@ export class WorkspaceStore {
   writeRuntimeStatus(status: Record<string, unknown>): void {
     this.ensure();
     const statusPath = path.join(this.statusDirectory, "runtime.json");
-    const temporaryPath = `${statusPath}.${process.pid}.tmp`;
-    fs.writeFileSync(temporaryPath, `${JSON.stringify(status, null, 2)}\n`, "utf8");
-    fs.renameSync(temporaryPath, statusPath);
+    writeJsonAtomic(statusPath, status);
   }
 
   private inboundPath(id: string): string {
@@ -645,11 +661,6 @@ export class WorkspaceStore {
   private writeInboundState(state: InboundState): void {
     this.ensure();
     const filePath = this.requestStatePath(state.requestId);
-    const temporaryPath = `${filePath}.${process.pid}.tmp`;
-    fs.writeFileSync(temporaryPath, `${JSON.stringify(state, null, 2)}\n`, {
-      encoding: "utf8",
-      flag: "wx",
-    });
-    fs.renameSync(temporaryPath, filePath);
+    writeJsonAtomic(filePath, state);
   }
 }

@@ -20,6 +20,7 @@ demo-company/workspace/status/runtime.json
 demo-company/workspace/status/requests/*.json
 demo-company/workspace/status/agents/*.json
 demo-company/workspace/status/bridge.lock
+demo-company/workspace/status/bridge.lock.d/
 demo-company/workspace/status/recovery/*.txt
 demo-company/workspace/events/activity/*.json
 demo-company/workspace/events/system/*.json

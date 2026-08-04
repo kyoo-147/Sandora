@@ -17,6 +17,9 @@ describe("bridge configuration", () => {
     expect(config.channels["ceo-office"]).toBe("1534053312582778950");
     expect(config.departments.design.leadAgent).toBe("design-lead");
     expect(config.departmentRoutingEnabled).toBe(true);
+    expect(config.demandDrivenDepartments).toBe(true);
+    expect(config.departmentWarmLeaseMs).toBe(600_000);
+    expect(config.departmentTabLabel).toBe("Departments");
   });
 
   it("keeps every schedule disabled before live validation", () => {

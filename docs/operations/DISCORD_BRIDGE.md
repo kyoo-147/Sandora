@@ -3,9 +3,10 @@
 ## Purpose
 
 The Discord bridge admits messages from the configured Owner in `#ceo-office`
-and five department channels. It routes work to six persistent Herdr leads,
-creates bounded elastic workers when a lead is occupied, and delivers durable
-outbox messages to configured Discord channels.
+and five department channels. CEO remains persistent; department leads start
+on demand in a no-focus `Departments` tab, remain warm for ten minutes after
+work, and then close safely. The bridge can create bounded elastic workers when
+a lead is occupied and delivers durable outbox messages to Discord.
 
 Discord is a communication surface. It does not create agents, expand CEO
 authority, or bypass Herdr, approval boundaries, evidence requirements, or the
@@ -55,9 +56,20 @@ For a `[DISCORD_TASK]` prompt:
 
 The bridge sends the initial receipt acknowledgement automatically.
 
-## Department handling
+## Department handling and lifecycle
 
-Persistent leads may answer bounded specialist work directly. They use a
+Department leads may answer bounded specialist work directly. A cold task is
+routed automatically to a verified CMDC or AGY runtime according to task fit;
+Sol is reserved for CEO. If raw startup fails, the bridge records the fallback
+and may use the configured non-Sol Codex model. A warm follow-up reuses the same
+lead, pane, runtime, and context.
+
+After the final durable outcome, a lead remains warm for ten minutes. The
+supervisor closes only panes it owns, never closes blocked or recovering work,
+and closes the `Departments` tab when its final owned pane expires. Unknown
+panes stop automatic cleanup and generate a system warning.
+
+Leads use a
 durable handoff when another department or CEO must own the next step. Work that
 is cross-functional, approval-gated, destructive, production-facing,
 credential-sensitive, financially committing, or governance-changing must
@@ -120,10 +132,22 @@ Webhooks` in task and report channels. Avatar PNGs and the author mapping live
 under `integrations/discord-bridge/assets/personas/` and `config/discord.json`.
 Inbound receipts and system events remain under the primary application bot.
 
-`#agent-activity` contains curated accepted, delegated, handoff, blocked, and
-completed transitions. `#system-log` contains redacted health transitions,
-warnings, and errors. Neither channel may contain task bodies, prompts,
-transcripts, credentials, or full stack traces.
+`#agent-activity` is the human-readable company timeline. It contains curated
+accepted, assigned, delegated, handoff, completed, delivered-result, warm, and
+stopped transitions. When a CEO or department agent sends an `update`, `final`,
+`report`, `approval`, or `error` to its working channel, the bridge mirrors a
+redacted preview of that result into `#agent-activity`, including the actor,
+request ID, destination, and runtime milestone. The full result remains in the
+working channel. Previews are capped at 300 characters and remove prompts,
+tokens, credentials, and stack traces. `#system-log` contains redacted health
+transitions, warnings, and errors. Neither observability channel contains full
+transcripts or task bodies.
+
+After a task reaches a durable completed outcome, the bridge also posts a short
+`TASK DONE REPORT` to the task's department channel. The report identifies the
+department, assigned agent, request ID, runtime/model, and channel containing
+the full result. This acts as a visible attendance/work-completion record while
+keeping the substantive answer and artifacts in their normal destination.
 
 ## Scheduled tasks
 
@@ -160,3 +184,5 @@ not generate reports itself.
   replayed. Missing evidence becomes a manual-recovery event.
 - One workspace permits only one bridge writer. A process lock prevents two
   bridge instances from claiming the same request.
+- On restart, CEO is reconciled but inactive department leads remain offline;
+  active or ambiguous work is marked for recovery instead of silently replayed.

@@ -83,6 +83,18 @@ export function loadBridgeConfig(
   if (typeof config.departmentRoutingEnabled !== "boolean") {
     throw new Error("departmentRoutingEnabled must be boolean");
   }
+  if (typeof config.demandDrivenDepartments !== "boolean") {
+    throw new Error("demandDrivenDepartments must be boolean");
+  }
+  if (!config.departmentTabLabel?.trim()) {
+    throw new Error("departmentTabLabel is required");
+  }
+  if (!Number.isInteger(config.departmentWarmLeaseMs) || config.departmentWarmLeaseMs < 1_000) {
+    throw new Error("departmentWarmLeaseMs must be an integer of at least 1000");
+  }
+  if (!Number.isInteger(config.departmentSweepMs) || config.departmentSweepMs < 250) {
+    throw new Error("departmentSweepMs must be an integer of at least 250");
+  }
   const departmentChannels = new Set<ChannelName>();
   const leadAgents = new Set<string>();
   for (const department of requiredDepartments) {
@@ -95,9 +107,10 @@ export function loadBridgeConfig(
       entry.channel,
       config.channels,
     );
-    if (!entry.profilePath?.trim() || entry.runtime !== "codex" || !entry.model?.trim()) {
+    const expectedRuntime = department === "ceo" ? "codex" : "auto";
+    if (!entry.profilePath?.trim() || entry.runtime !== expectedRuntime || !entry.model?.trim()) {
       throw new Error(
-        `departments.${department} needs profilePath, codex runtime, and model`,
+        `departments.${department} needs profilePath, ${expectedRuntime} runtime, and fallback model`,
       );
     }
     if (departmentChannels.has(entry.channel)) {

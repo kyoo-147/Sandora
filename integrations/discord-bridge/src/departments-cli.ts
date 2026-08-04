@@ -1,5 +1,6 @@
 import { loadBridgeConfig } from "./config.js";
 import { EventPublisher } from "./events.js";
+import { HerdrDepartmentTabManager } from "./department-tabs.js";
 import { assertHerdrEnvironment } from "./herdr.js";
 import { repositoryRoot, workspaceRoot } from "./paths.js";
 import { WorkspaceStore } from "./store.js";
@@ -14,6 +15,7 @@ async function main(): Promise<void> {
     store,
     new EventPublisher(store),
     new CliSupervisorControl(repositoryRoot),
+    new HerdrDepartmentTabManager(repositoryRoot, config.departmentTabLabel),
   );
   const leads = await supervisor.reconcileLeads();
   process.stdout.write(
