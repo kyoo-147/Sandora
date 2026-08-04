@@ -36,6 +36,15 @@ class FakeControl implements SupervisorControl {
     return agent;
   }
 
+  async renameAgent(paneId: string, name: string): Promise<LiveAgent> {
+    const existing = [...this.agents.entries()].find(([, agent]) => agent.paneId === paneId);
+    if (!existing) throw new Error(`Missing pane ${paneId}`);
+    this.agents.delete(existing[0]);
+    const renamed = { ...existing[1], name };
+    this.agents.set(name, renamed);
+    return renamed;
+  }
+
   async startRawWorker(name: string): Promise<LiveAgent> {
     const agent = { name, paneId: `raw-${name}`, status: "unknown" };
     this.agents.set(name, agent);
@@ -94,6 +103,27 @@ describe("DepartmentSupervisor", () => {
     expect(leads).toHaveLength(6);
     expect(control.agents.size).toBe(6);
     expect(store.readAgent("product-lead")?.lifecycle).toBe("idle");
+  });
+
+  it("recovers the persisted CEO name only when the same pane is unnamed", async () => {
+    const { supervisor, store, control } = setup();
+    store.upsertAgent({
+      name: "ceo",
+      department: "ceo",
+      role: "lead",
+      paneId: "w1:p1",
+      lifecycle: "working",
+      runtime: "codex",
+      model: "gpt-5.6-sol",
+      activeRequestIds: [],
+      updatedAt: "2026-08-04T00:00:00.000Z",
+    });
+    const unnamed = control.agents.get("ceo")!;
+    control.agents.delete("ceo");
+    control.agents.set("w1:p1", { ...unnamed, name: undefined });
+    await supervisor.reconcileLeads();
+    expect(control.agents.get("ceo")).toMatchObject({ paneId: "w1:p1", name: "ceo" });
+    expect(control.agents.size).toBe(6);
   });
 
   it("assigns the lead first and creates an elastic worker while busy", async () => {

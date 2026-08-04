@@ -23,6 +23,7 @@ export interface LiveAgent {
 
 export interface SupervisorControl {
   getAgent(name: string): Promise<LiveAgent | undefined>;
+  renameAgent(paneId: string, name: string): Promise<LiveAgent>;
   startAgent(name: string, model: string): Promise<LiveAgent>;
   startRawWorker(
     name: string,
@@ -96,6 +97,21 @@ export class CliSupervisorControl implements SupervisorControl {
       await this.closePane(paneId).catch(() => undefined);
       throw error;
     }
+  }
+
+  async renameAgent(paneId: string, name: string): Promise<LiveAgent> {
+    const { stdout } = await execFileAsync(
+      "herdr",
+      ["agent", "rename", paneId, name],
+      {
+        cwd: this.repositoryRoot,
+        encoding: "utf8",
+        timeout: this.timeoutMs,
+        windowsHide: true,
+        env: childEnvironment(),
+      },
+    );
+    return parseAgent(stdout);
   }
 
   async startRawWorker(
@@ -239,20 +255,35 @@ export class DepartmentSupervisor {
       let live = await this.control.getAgent(departmentConfig.leadAgent);
       if (!live) {
         if (department === "ceo") {
-          throw new Error("Primary Herdr agent ceo is missing; refusing to create a second CEO");
+          const persisted = this.store.readAgent("ceo");
+          const candidate = persisted?.paneId
+            ? await this.control.getAgent(persisted.paneId)
+            : undefined;
+          if (!candidate || candidate.name) {
+            throw new Error("Primary Herdr agent ceo is missing; refusing to create a second CEO");
+          }
+          live = await this.control.renameAgent(candidate.paneId, "ceo");
+          this.events.publish({
+            level: "info",
+            code: "agent.name_recovered",
+            department: "ceo",
+            actor: "ceo",
+            summary: "Recovered the persisted CEO live name after Herdr resume",
+          });
+        } else {
+          live = await this.control.startAgent(
+            departmentConfig.leadAgent,
+            departmentConfig.model,
+          );
+          this.events.publish({
+            level: "info",
+            code: "agent.started",
+            department,
+            actor: departmentConfig.leadAgent,
+            summary: `${departmentConfig.displayName} lead started`,
+            detail: `${departmentConfig.runtime} · ${departmentConfig.model}`,
+          });
         }
-        live = await this.control.startAgent(
-          departmentConfig.leadAgent,
-          departmentConfig.model,
-        );
-        this.events.publish({
-          level: "info",
-          code: "agent.started",
-          department,
-          actor: departmentConfig.leadAgent,
-          summary: `${departmentConfig.displayName} lead started`,
-          detail: `${departmentConfig.runtime} · ${departmentConfig.model}`,
-        });
       }
       const previous = this.store.readAgent(departmentConfig.leadAgent);
       const entry = registryEntry(department, departmentConfig, live);

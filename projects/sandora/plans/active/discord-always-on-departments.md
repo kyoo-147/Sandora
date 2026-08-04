@@ -35,8 +35,8 @@ bridge before rollout validation.
 
 ## Validation record
 
-- `npm test`: 55 tests passed across nine files after attachment and persona
-  delivery were added.
+- `npm test`: 56 tests passed across nine files after attachment, persona
+  delivery, and persisted CEO-name recovery were added.
 - `npm run check`: passed.
 - `npm run build`: passed.
 - `npm audit --audit-level=high`: zero vulnerabilities.
@@ -49,8 +49,12 @@ bridge before rollout validation.
   leads available; department routing and local image attachment delivery
   verified.
 - Persona webhook smoke: implementation validated locally; live creation is
-  pending the bot's `Manage Webhooks` permission. Six smoke messages remain in
-  durable pending outbox state.
+  verified after the bot received `Manage Webhooks`; all six persona messages
+  were accepted by Discord with no pending or failed records.
+- Herdr resume recovery: the live CEO name was restored from the persisted pane
+  identity, four missing department leads were reconciled without duplicates,
+  and a guarded automatic recovery path now has unit coverage. A future restart
+  should verify that path end to end.
 
 ## Result
 
