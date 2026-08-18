@@ -1,7 +1,14 @@
 # Local dependencies and build output
 node_modules/
+.pnpm-store/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
 dist/
+build/
 coverage/
+.cache/
 
 # Credentials and local environment
 .env
@@ -9,6 +16,17 @@ coverage/
 !.env.example
 *.secret
 *.secrets
+*.log
+.hermes/
+.no-mistakes/
+
+# First Mate private operational state
+.firstmate/
+state/
+data/
+config/
+projects/
+treehouse.toml
 
 # Discord bridge runtime records
 demo-company/workspace/inbox/*.json
@@ -29,3 +47,9 @@ demo-company/workspace/reports/*
 
 # Regenerable image-generation intermediates
 integrations/discord-bridge/assets/personas/chroma/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
