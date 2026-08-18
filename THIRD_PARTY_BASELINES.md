@@ -62,7 +62,16 @@ hermes doctor
 hermes chat -q "Hello"
 ```
 
-Verification is currently blocked on this host because only Python 3.14.4 is installed while Hermes declares `requires-python = ">=3.11,<3.14"`, and `uv` is not installed. No API credentials were requested or written, so a real model chat cannot be claimed until provider setup is supplied.
+Verification on this host:
+
+- `uv` installed at `%USERPROFILE%\\.local\\bin\\uv.exe`.
+- Managed Python `3.13.15` installed and Hermes venv created outside the source tree at `%USERPROFILE%\\.hermes\\venvs\\hermes-dev`.
+- Editable install with `.[all,dev]` completed; `hermes_cli` import passed.
+- `hermes doctor` ran successfully and validated the Python environment, SQLite, required packages, configuration paths, and built-in tools. It reports no provider credentials, which is expected because no secrets were supplied.
+- `hermes chat -q "Hello"` started and exited cleanly, but correctly reported that no inference provider is configured. A real model response cannot be claimed until a provider is configured.
+- The official `scripts/run_tests.sh` is POSIX shell and cannot be used directly from PowerShell. Direct `pytest tests/verify -q --maxfail=1` ran 14 tests successfully before failing on an upstream test that starts `python3`; native Windows exposes `python.exe` instead. A compatibility-shim rerun exceeded the bounded test window without producing a result and was stopped. No upstream test code was modified.
+
+The remaining verification limitation is the Windows case-insensitive checkout collision documented above. Use WSL2/Linux for a byte-faithful checkout and the complete official test runner. No API credentials were requested or written.
 
 ## Provenance rule
 
