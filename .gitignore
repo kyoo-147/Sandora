@@ -9,8 +9,6 @@ dist/
 build/
 coverage/
 .cache/
-.pytest_cache/
-.pytest-cache/
 
 # Credentials and local environment
 .env
