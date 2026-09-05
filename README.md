@@ -1,231 +1,202 @@
 # Sandora
 
-> **Public source note**  
-> We cannot publish the latest source code at this time because of versioning, commercial, and privacy constraints. The active implementation includes product, workflow, and business-specific details that are still being distilled into a smaller public-ready version.
+<p align="center">
+  <img src="docs/assets/sandora/ui-main.png" alt="Sandora desktop workspace" width="100%">
+</p>
 
-Sandora is an **AI Department OS** for building virtual AI teams, automated workflows, and human-governed business operations.
+<p align="center">
+  <strong>AI should not stop at answering. It should finish the job.</strong>
+</p>
 
-Instead of treating AI as a single chatbot, Sandora models a small operating company: departments, agents, tools, memory, workflows, approvals, audit logs, and measurable outcomes.
+<p align="center">
+  <a href="https://github.com/kyoo-147/Sandora/stargazers"><img src="https://img.shields.io/github/stars/kyoo-147/Sandora?style=flat-square" alt="GitHub stars"></a>
+  <a href="https://github.com/kyoo-147/Sandora/issues"><img src="https://img.shields.io/github/issues/kyoo-147/Sandora?style=flat-square" alt="GitHub issues"></a>
+  <a href="https://github.com/kyoo-147/Sandora/blob/main/LICENSE"><img src="https://img.shields.io/badge/status-active%20development-orange?style=flat-square" alt="Active development"></a>
+</p>
 
-![Sandora main menu](docs/assets/sandora/sandora-main-menu.png)
+Sandora is an **AI Department OS** and governed adaptive agent runtime for completing real business work—not just generating answers.
 
-## Why Sandora Exists
+Instead of treating AI as a single chatbot, Sandora brings together agents, tools, memory, workflows, permissions, approvals, observability, model routing, computer use, and learning in one operating layer.
 
-Small teams often lose time to repeated operational work:
+> [!IMPORTANT]
+> **Sandora is under active development.** This public repository is currently a product and technical reference while the latest implementation is being distilled into a smaller, public-ready open-source release. APIs, interfaces, architecture, and product scope may change.
 
-- Customer support triage, summaries, follow-ups, and reporting.
-- Internal research, planning, meeting notes, and task routing.
-- Marketing, sales, operations, finance, and admin workflows that span multiple tools.
-- Business actions that need approval before they are executed.
+## Public source note
 
-Many AI products can answer prompts. Fewer systems can coordinate work across roles, permissions, data, tools, and approval gates. Sandora focuses on that operating layer.
+We cannot publish the latest source code at this time because of versioning, commercial, and privacy constraints. The active implementation includes product, workflow, and business-specific details that are still being distilled into a smaller public-ready version.
 
-## From DropPilot To Sandora
+Private business logic, customer-specific workflows, proprietary integrations, credentials, private datasets, and unreleased commercial components will remain excluded. We will publish reusable primitives as they are ready for safe release.
 
-Sandora was previously called **DropPilot** and was originally focused on the dropshipping market.
+## The execution loop
 
-The first product wedge was useful: AI agents for product research, supplier operations, creative work, ads, orders, and support. But the deeper insight was that the valuable part was not dropshipping itself. The valuable part was the platform structure:
-
-- Create a company workspace.
-- Define departments.
-- Add specialized agents.
-- Give each agent tools, memory, permissions, and model policies.
-- Run workflows with approval checkpoints.
-- Track cost, quality, latency, and business impact.
-
-That is why the product expanded from DropPilot into Sandora: a broader AI Department OS for startups, agencies, small businesses, and internal teams.
-
-![DropPilot original menu](docs/assets/sandora/droppilot-main-menu.png)
-
-## Product Surface
-
-### Agent Directory
-
-The agent directory helps users discover and add AI agents by department, skill, model, status, and connected tools.
-
-![Agent directory](docs/assets/sandora/sandora-agent-directory.png)
-
-### Configure Agent
-
-Each agent is configured as a controlled operating unit:
-
-```txt
-Agent = Role + Department + Model + Tools + Memory Scope + Permissions + Approval Rules + Output Contract
+```text
+User intent
+  → understand context
+  → plan
+  → select capabilities
+  → check policy and permissions
+  → execute
+  → observe
+  → verify
+  → retry, re-plan, or escalate when needed
+  → complete the task
+  → store the execution trajectory
 ```
 
-The configuration screen covers persona, model fallback, knowledge sources, tool access, permissions, approvals, and test prompts.
+The model is one component. Sandora focuses on the operating layer around it.
 
-![Configure agent](docs/assets/sandora/sandora-config-agent.png)
+## Product surfaces
 
-### Mission Control
+| Surface | Purpose |
+| --- | --- |
+| **Agent Directory** | Create and manage specialized agents for support, operations, research, development, data, review, and more. |
+| **Agent Configuration** | Define role, model, tools, skills, memory scope, permissions, approval rules, knowledge, and execution policy. |
+| **Mission Control** | Monitor active work, delegated runs, approvals, retries, failures, model usage, and outcomes. |
+| **Company Chat** | Turn internal conversations into executable tasks and coordinate people with agents. |
+| **HUD** | Provide lightweight contextual assistance over the user’s current application and screen context. |
+| **Computer Use** | Let agents work with browsers, desktop applications, legacy software, and systems without APIs. |
+| **Agent Office** | Visualize live agent states such as working, using tools, awaiting approval, reviewing, blocked, and completed. |
 
-Mission Control is the execution surface for work: backlog, in-progress tasks, review queues, assignments, automation flow, approval checkpoints, and impact estimates.
+## Screenshots
 
-![Mission control](docs/assets/sandora/sandora-mission-control.png)
+### Start with intent
 
-### Company Chat
+<p align="center"><img src="docs/assets/sandora/ui-main.png" alt="Sandora main workspace" width="100%"></p>
 
-Company Chat connects channels, pinned summaries, linked tasks, files, meetings, shared decisions, and agent participation into a company-level communication layer.
+### Orchestrate work
 
-![Company chat](docs/assets/sandora/sandora-chat.png)
+<p align="center"><img src="docs/assets/sandora/ui-task-kanban.png" alt="Sandora task Kanban" width="100%"></p>
 
-## System Architecture
+### See the department at work
 
-Sandora is designed around this high-level architecture:
+<p align="center"><img src="docs/assets/sandora/ui-agent-office-1.png" alt="Sandora multi-agent office" width="100%"></p>
 
-```txt
-User Workspace
-  -> Department Builder
-  -> Agent Runtime
-  -> Workflow Engine
-  -> Integration Hub
-  -> Approval Center
-  -> Analytics / Audit
+<p align="center"><img src="docs/assets/sandora/ui-agent-office-2.png" alt="Sandora agent office view" width="100%"></p>
+
+### Configure the system
+
+<p align="center">
+  <img src="docs/assets/sandora/ui-setup-agent.png" alt="Sandora agent setup" width="49%">
+  <img src="docs/assets/sandora/ui-models.png" alt="Sandora model configuration" width="49%">
+</p>
+
+<p align="center">
+  <img src="docs/assets/sandora/ui-plugins.png" alt="Sandora plugins" width="49%">
+  <img src="docs/assets/sandora/ui-integration.png" alt="Sandora integrations" width="49%">
+</p>
+
+### Work across contexts
+
+<p align="center"><img src="docs/assets/sandora/ui-multi-device-chat.png" alt="Sandora multi-device chat" width="100%"></p>
+
+<p align="center"><img src="docs/assets/sandora/ui-hud.png" alt="Sandora contextual HUD" width="100%"></p>
+
+## Core runtime
+
+Sandora Core Runtime manages the complete lifecycle of an agent task:
+
+- Agent profiles, sessions, context, memory, and skills
+- Model selection and capability routing
+- Tool execution, policy checks, and approvals
+- Retries, delegation, verification, and failure recovery
+- Final-state validation and structured execution traces
+
+A typical governed action is:
+
+```text
+Action → permission check → policy check → risk classification
+       → approval when required → execution → verification → audit log
 ```
 
-Core backend direction:
+People can observe, approve, reject, interrupt, steer, correct, or take over a task.
 
-- **Next.js** for product UI and server routes.
-- **Node.js** for orchestration and integration workers.
-- **PostgreSQL** for durable workspace, workflow, run, audit, and billing data.
-- **Redis** for queues, run state, caching, locks, rate limits, and short-lived coordination.
+## Architecture
 
-![Sandora system architecture](docs/assets/sandora/sandora-system-architecture.png)
+Sandora is organized around logical layers rather than a single monolithic agent:
 
-## Custom Workflow Engine
+```text
+Interaction
+  Desktop · Chat · HUD · Communication channels · Agent Office
 
-Sandora uses a custom workflow engine based on graph/state-machine concepts.
+Organizational intelligence
+  Roles · Departments · Assignment · Delegation · Coordination
 
-```txt
-Trigger
-  -> State Graph
-  -> Agent Task
-  -> Tool Action
-  -> Condition
-  -> Handoff
-  -> Approval Gate
-  -> Execute
-  -> Log
+Agent harness
+  Agent loop · Context · Sessions · Reasoning · Tool execution
+
+Capability registry
+  Native tools · MCP servers · Computer Use · Workflows · Integrations
+
+Memory and skills
+  Persistent knowledge · Episodic memory · Experience · Procedures
+
+Governance and observability
+  Permissions · Policy · Approval · Audit · Recovery · Traces
+
+Foundation models
+  Cloud models · Local models · VLMs · Model routing
 ```
 
-Important engine capabilities:
+## Everything is a plugin
 
-- Run history for every workflow execution.
-- Retry policy for unstable model or tool calls.
-- Fallback behavior across models, tools, or human review.
-- Conditional branches based on task output, risk level, cost, or business state.
-- Approval gates before risky actions such as sending email, publishing content, writing data, launching campaigns, or spending budget.
+Capabilities are replaceable and permission-scoped:
 
-![Custom workflow engine](docs/assets/sandora/sandora-workflow-engine.png)
+- Models and model providers
+- Native tools and MCP servers
+- Memory providers and skills
+- Communication channels and workflows
+- Computer Use and UI extensions
+- Evaluators and learning components
 
-## Agent Runtime And Permission Model
+The Capability Registry selects only what is relevant to the task, state, permission scope, and risk level instead of exposing every available tool to the model.
 
-Sandora treats each agent as a governed runtime, not just a prompt template.
+## Memory, knowledge, and policy
 
-The runtime needs to answer:
+Sandora separates memory into scopes such as customer, organization, episodic, and experience memory. Memory is permission-scoped and should preserve provenance rather than blindly storing every model or user statement.
 
-- What is this agent allowed to know?
-- What tools can it use?
-- Which actions can it execute automatically?
-- Which actions require approval?
-- Which model should it use for this task?
-- How do we validate the output?
-- How do we log the action for review?
+Knowledge contains products, documentation, FAQs, and operational facts. **Policy defines what an agent is allowed or required to do.** When knowledge conflicts with authoritative policy, policy takes priority. If the correct rule cannot be determined safely, Sandora should escalate instead of guess.
 
-![Agent runtime and permission model](docs/assets/sandora/sandora-agent-runtime-permission.png)
+## Adaptive learning
 
-## Model Routing And Cost Optimization
+Sandora’s learning loop is deliberately governed:
 
-Sandora is model-provider flexible. A workspace may use OpenAI, Gemini, Claude, local models, or a managed plan.
-
-The routing layer is designed around:
-
-```txt
-Task classification
-  -> Model router
-  -> Provider / local model / custom plan
-  -> Cost tracking
-  -> Latency and quality metrics
-  -> Fallback
+```text
+Execution → trajectory → outcome and correction → curation
+  → privacy filtering → quality gate → dataset → adapter training
+  → evaluation → regression test → promote or rollback
 ```
 
-The key product belief is simple: the strongest model is not always the best model. For many business workflows, cost, latency, control, reliability, and approval behavior matter as much as raw model quality.
+Adaptation may happen through configuration, persistent memory, procedural skills, retrieved demonstrations, or post-training such as LoRA/QLoRA. No experience is automatically promoted into long-term behavior without quality, privacy, policy, generalization, and regression checks.
 
-![Model routing and cost optimization](docs/assets/sandora/sandora-model-routing-cost.png)
+## Evaluation
 
-## Company Brain / Memory Layer
+Sandora evaluates agents on final outcomes, not only conversation quality. Sandora-CS-Eval is designed around controlled business scenarios with customers, orders, inventory, shipping, returns, refunds, policies, tools, hidden constraints, and approval conditions.
 
-Sandora needs a scoped memory layer for company context:
+Key dimensions include task success, policy compliance, final-state correctness, correction rate, false resolution, tool errors, latency, token usage, cost, and human takeover.
 
-- Documents.
-- SOPs.
-- Chats.
-- Meeting notes.
-- Client files.
-- Policies.
-- Research.
-- Prior task history.
+## Roadmap to the public release
 
-This layer is indexed for retrieval and restricted by company, department, agent, and permission scope. A finance agent should not automatically see private HR files. A support agent should not write to a CRM without the right policy and approval path.
+The public version is expected to focus on reusable components such as:
 
-![Company brain and memory layer](docs/assets/sandora/sandora-company-brain-memory.png)
+- Agent runtime primitives
+- Capability Registry and MCP integration
+- Governance and approval controls
+- Execution traces
+- Memory interfaces and skills
+- Evaluation tooling
+- Example workflows
+- Desktop interaction components
 
-## Integration And Automation Layer
+Sandora is currently focused on customer support and operational workflows, with a longer-term direction spanning engineering, research, marketing, finance, administration, and internal automation.
 
-Sandora is designed to connect with external tools through permissioned actions:
+## Contributing
 
-- Gmail.
-- Slack.
-- Drive.
-- Notion.
-- CRM systems.
-- GitHub.
-- Calendar.
-- Webhooks and custom APIs.
-
-The integration layer must support credential handling, rate limits, validation, dry-runs, approval checks, execution logs, and rollback where possible.
-
-![Integration and automation layer](docs/assets/sandora/sandora-integration-automation.png)
-
-## Industry Template Expansion
-
-DropPilot was the first template. Sandora expands the same operating model into multiple departments and industries:
-
-- Marketing agency.
-- Recruitment.
-- Customer support.
-- Finance and admin.
-- Software and product teams.
-- Internal operations.
-- Ecommerce and dropshipping.
-
-The goal is not to hard-code one vertical. The goal is to make it easier to compose an AI department around a specific business process.
-
-![Industry template expansion](docs/assets/sandora/sandora-industry-template-expansion.png)
-
-## Impact Direction
-
-Sandora is being shaped around practical business impact:
-
-- Reduce time spent on repeated operational tasks.
-- Improve handoff quality between roles and departments.
-- Keep risky AI actions under human approval.
-- Make AI usage measurable through cost, latency, quality, and audit history.
-- Help small teams operate with more structure without hiring a full department.
-
-The current product direction has also been tested conceptually against small controlled business operations where repeated tasks can be delegated, reviewed, and measured.
-
-## Current Status
-
-Sandora is still under active development. This public repository is currently used as a public-facing product and technical brief while the latest source is prepared for a safer, smaller, public version.
-
-Near-term work:
-
-- Distill the private implementation into a clean public codebase.
-- Keep architecture, product documentation, and screenshots updated.
-- Separate generic platform primitives from business-specific/private workflows.
-- Publish a minimal runnable version once the source is safe to open.
+Contributions, issue reports, design feedback, and thoughtful discussion are welcome. Because the public architecture is still being distilled, please open an issue before beginning a large implementation so we can align on scope and public-release boundaries.
 
 ## License
 
 License information will be updated when the public source package is ready.
+
+---
+
+**Sandora** — *AI should not stop at answering. It should finish the job.*
